@@ -32,7 +32,8 @@ let gitEndpoint: Endpoint = {
 
 // All the endpoints we have on the server
 // Why yes, I *am* too lazy to use a DB!
-var endpoints: Endpoint[] = [ majordomoSuggestionEndpoint ];
+// using Sets allows us to not add duplicates
+let endpoints = new Set([ majordomoSuggestionEndpoint ]);
 
 // Check if we have a slack token
 if (!process.env.SLACK_TOKEN) {
@@ -68,26 +69,32 @@ httpServer.use(bodyParser.urlencoded({ extended: false }));
 httpServer.use(bodyParser.json());
 
 // Set up the ability to list for each endpoint
-endpoints.forEach(endpoint => {
-    httpServer.post(`/custom-endpoints/${endpoint.url}`, async (req, res) => {
-        console.log("You have reached the endpoint!");
+// Question: does this cause a duplication problem? Are dynamic endpoints a thing?
+const setupEndpoints = () => {
+    console.log(`setting up ${endpoints.size} endpoints`);
+    endpoints.forEach(endpoint => {
+        httpServer.post(`/custom-endpoints/${endpoint.url}`, async (req, res) => {
+            console.log(`Called custon endpoint ${endpoint.name}`);
 
-        // Create VM to run endpoint action code
-        const sandbox = new Vm();
+            // Create VM to run endpoint action code
+            const sandbox = new Vm();
 
-        // Define the integration functions that the user can call!
-        sandbox.realm.global.getResponseJson = function() { return req.body; };
-        sandbox.realm.global.slackPost = function(text: string) {
-            return (async () => { await sendSlackMessage(endpoint.linkedSlackChannel, text) })();
-        };
+            // Define the integration functions that the user can call!
+            sandbox.realm.global.getResponseJson = function() { return req.body; };
+            sandbox.realm.global.slackPost = function(text: string) {
+                return (async () => { await sendSlackMessage(endpoint.linkedSlackChannel, text) })();
+            };
 
-        sandbox.eval(endpoint.onCallCode);
+            sandbox.eval(endpoint.onCallCode);
 
-        res.send({
-            "sucess": true
+            res.send({
+                "sucess": true
+            });
         });
-    });
-})
+    })
+};
+
+setupEndpoints();
 
 httpServer.get("/", (req, res) => {
     console.log("received a thing");
@@ -95,11 +102,14 @@ httpServer.get("/", (req, res) => {
 })
 httpServer.post("/create-endpoint", async (req, res) => {
     let body = (req.body) as Endpoint;
-    console.log(body);
 
+    console.log(`Request to create endpoint ${body.name}`);
 
-    console.log("Request to create an endpoint");
-    res.send("heh");
+    endpoints.add(body);
+
+    setupEndpoints();
+
+    res.send(`now have the following endpoints: ${Array.from(endpoints).reduce<Record<symbol, string>>((prev, curr) => `${prev}, ${curr.name}`, "")}`);
 })
 
 httpServer.listen(1776, async () => {
