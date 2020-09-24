@@ -105,6 +105,7 @@ httpServer.post("/create-endpoint", async (req, res) => {
 
     console.log(`Request to create endpoint ${body.name}`);
 
+    // NOTE: don't blindly add endpoints, check if they exist in the set
     endpoints.add(body);
 
     setupEndpoints();
