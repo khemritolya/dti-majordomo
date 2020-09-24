@@ -9,7 +9,7 @@ interface Endpoint {
     name: string,
     onCallCode: string,
     linkedGithubRepo: string,
-    linkedSlackChannel: string,
+    linkedSlackChannel: string
 }
 
 let majordomoSuggestionEndpoint: Endpoint = {
@@ -19,7 +19,15 @@ let majordomoSuggestionEndpoint: Endpoint = {
     `let data = getResponseJson();
     slackPost(\"Someone has a suggestion: \" + data.text);`,
     linkedGithubRepo: "",
-    linkedSlackChannel: "#zzz-testing-channel"
+    linkedSlackChannel: "#zzz-testing-channel",
+}
+
+let gitEndpoint: Endpoint = {
+    url: "git",
+    name: "dti-majordomo-git",
+    onCallCode: `let data`,
+    linkedGithubRepo: "https://github.com/ngwattcos/test-repo",
+    linkedSlackChannel: "#zzz-testing-channel",
 }
 
 // All the endpoints we have on the server
@@ -61,7 +69,7 @@ httpServer.use(bodyParser.json());
 
 // Set up the ability to list for each endpoint
 endpoints.forEach(endpoint => {
-    httpServer.post(`/${endpoint.url}`, async (req, res) => {
+    httpServer.post(`/custom-endpoints/${endpoint.url}`, async (req, res) => {
         console.log("You have reached the endpoint!");
 
         // Create VM to run endpoint action code
@@ -79,6 +87,19 @@ endpoints.forEach(endpoint => {
             "sucess": true
         });
     });
+})
+
+httpServer.get("/", (req, res) => {
+    console.log("received a thing");
+    res.send("here's the thing");
+})
+httpServer.post("/create-endpoint", async (req, res) => {
+    let body = (req.body) as Endpoint;
+    console.log(body);
+
+
+    console.log("Request to create an endpoint");
+    res.send("heh");
 })
 
 httpServer.listen(1776, async () => {
