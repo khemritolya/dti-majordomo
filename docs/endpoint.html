@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,40 +8,62 @@
     <link rel="stylesheet" href="style.css">
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-  </head>
-  <body>
-        <div class="logo-container">
-                <div class="logo">
-                    <img class="logo-img" src="images/logo.png" alt="">
-                </div> 
-            </div>
-                <div class="wrapper">
-                    <div class="input-group">
-                      <label class = "label-url" for="basic-url">Backend URL </label><br>
-                      <input type="text" class="form-control" id="basic-url">
-                    </div>
-                    <div class="options">
-                    <div class="search-input-group">
-                        <label class = "history-url" for="ajax">Choose an Endpoint </label><br>
-                        <datalist id="json-datalist"></datalist> 
-                        <input type="text" class="search-control" list="json-datalist"/>
-                    </div>
-                    <label class="or-label">or</label>
-                    </div>
-                    <a href="form.html" target=_parent><button type="button" class="create_btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">Create an endpoint</button></a>
-                </div>
-      <script type="text/javascript" src="script.js"></script>
-      <script>
-        $(document).ready(function(){
-            $("input") on("mouseover", function(){
-                var a = $(this).attr('name');
-                populate(a);
-            });
-        });
+</head>
 
-      </script>
-      <script src="main.js" type="text/javascript"></script>
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>  
+<body>
+    <div class="logo-container">
+        <div class="logo">
+            <img class="logo-img" src="images/logo.png" alt="">
+        </div>
+    </div>
+    <div class="wrapper">
+        <div class="input-group">
+            <label class="label-url" for="basic-url">Backend URL </label><br>
+            <input type="text" class="form-control" id="basic-url">
+        </div>
+        <div class="container">
+            <div class="search-input-group">
+                <label class="history-url" for="ajax">Choose an Endpoint </label><br>
+                <input type="text" class="search-control" list="json-datalist" />
+                <datalist id="json-datalist">
+                    <option value="CUReviews_Endpoint1"></option>
+                    <option value="CoursePlan_Endpoint1"></option>
+                    <option value="CoursePlan_Endpoint2"></option>
+                    <option value="Flux_Endpoint1"></option>
+                    <option value="QueueMeIn_Endpoint1"></option>
+                    <option value="QueueMeIn_Endpoint2"></option>
+                    <option value="QueueMeIn_Endpoint3"></option>
+                    <option value="Carriage_Endpoint1"></option>
+                </datalist>
+            </div>
+            <label class="or-label">or</label>
+            <a href="form.html" target=_parent><button type="button" class="next_btn btn-primary" data-toggle="button"
+                    aria-pressed="false" autocomplete="off">Next</button></a>
+        </div>
+        <a href="form.html" target=_parent><button type="button" class="create_btn btn-primary" data-toggle="button"
+                aria-pressed="false" autocomplete="off">Create an endpoint</button></a>
+    </div>
+    <script type="text/javascript" src="script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("select").change(function () {
+                $(this).find("option:selected").each(function () {
+                    var optionValue = $(this).attr("value");
+                    if (optionValue) {
+                        $(".next_btn").not("." + optionValue).hide();
+                        $(".next_btn").show();
+                    } else {
+                        $(".next_btn").hide();
+                    }
+                });
+            }).change();
+        });
+    </script>
+    <script src="main.js" type="text/javascript"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>

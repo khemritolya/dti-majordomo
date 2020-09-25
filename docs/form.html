@@ -1,21 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Majordomo</title>
     <link rel="stylesheet" href="style.css">
-    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'> 
-  </head>
-  <body>
-        <div class="logo-container">
-                <div class="logo">
-                    <img class="logo-img" src="images/logo.png" alt="">
-                </div> 
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+</head>
+
+<body>
+    <div class="logo-container">
+        <div class="logo">
+            <img class="logo-img" src="images/logo.png" alt="">
         </div>
-                <div class="wrapper">
-                </div>
-      <script src="main.js"></script> 
-      <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>  
+    </div>
+    <div class="wrapper">
+        <div class="name-group">
+            <label class="name-url" for="basic-url">Name </label><br>
+            <input type="text" class="name-control" id="basic-url">
+        </div>
+        <div class="rate-group">
+            <label class="rate-url">Rate Limit </label><br>
+            <select class="rate-select">
+                <option value="1 minute">1 minute</option>
+                <option value="5 minutes">5 minutes</option>
+                <option value="1 hour">1 hour</option>
+                <option value="24 hours">24 hours</option>
+            </select>
+        </div>
+        <div class="desc-group">
+            <label class="desc-url" for="basic-url">Endpoint Description </label><br>
+            <textarea name="desc-control" rows="5" cols="120"></textarea>
+        </div>
+        <div class="github-group">
+            <label class="github-url">Github URL </label><br>
+            <input type="text" class="github-control" id="basic-url">
+        </div>
+        <div class="slack-group">
+            <label class="slack-url">Slack Channel </label><br>
+            <input type="text" class="slack-control" id="basic-url">
+        </div>
+        <div class="code-group">
+            <label class="code-url" for="basic-url">Code </label><br>
+            <textarea name="code-control" rows="8" cols="120"></textarea>
+        </div>
+        <a href="endpoint.html" target=_parent><button type="button" class="back_btn btn-primary" data-toggle="button"
+                aria-pressed="false" autocomplete="off">Back</button></a>
+        <a href="confirm.html" target=_parent><button type="button" class="submit_btn btn-primary" data-toggle="button"
+                aria-pressed="false" autocomplete="off">Submit</button></a>
+    </div>
+    <script src="main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>
