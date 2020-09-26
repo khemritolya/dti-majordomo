@@ -58,3 +58,11 @@ Calling this function creates a github issue in the repository defined (see the 
 ##### `slackPost(text, callback?)`
 
 Calling this function posts text to the slack channel that defined (again, see endpoint creation form). On a success, it will then attempt to call the callback, if one is specified. It provides no arguments to the callback.
+
+##Contributors
+
+#####Luis Hoderlein - Backend
+#####Scott Wang - Backend
+#####Mihikaa Goenka - Frontend
+#####Yuxuan Chen - Design
+#####Nina Xie - Product Manager
