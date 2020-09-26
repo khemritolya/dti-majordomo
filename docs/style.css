@@ -10,6 +10,10 @@
 
 body{
     font-family: "Poppins", sans-serif;
+    background: url(images/background.png);
+    background-repeat: no-repeat;
+    background-size: 1500px 900px;
+    
 }
 
 
