@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import Vm from "vm.js";
 import crypto from "crypto";
 import ipify from "ipify";
+import { Octokit } from "@octokit/core";
 
 // A particular endpoint, and all the information associated with it.
 interface Endpoint {
@@ -19,27 +20,48 @@ const majordomoTestingChannel: string = "#majordomo-testing-channel"
 
 // An example suggestions endpoint
 let majordomoSuggestionEndpoint: Endpoint = {
-    url: "something",
+    url: "majordomo-suggestion",
     name: "dti-majordomo-suggestion",
     onCallCode:
-    `let data = getResponseJson();
-    slackPost(\"Someone has a suggestion: \" + data.text);`,
-    linkedGithubRepo: "",
+    `// Get any JSON Data associated with the HTTP POST request
+    const data = getPostJson();
+
+    // Get the IP of whoever posted to the endpoint
+    const ip = getIpAddr();
+
+    // Post the 'text' field of the json to slack!
+    slackPost(\"A user (\" + ip + \") has a suggestion: \" + data.text);`,
+    linkedGithubRepo: "https://github.com/khemritolya/dti-majordomo",
     linkedSlackChannel: majordomoTestingChannel,
 }
 
-let gitEndpoint: Endpoint = {
-    url: "git",
-    name: "dti-majordomo-git",
-    onCallCode: `let data`,
-    linkedGithubRepo: "https://github.com/ngwattcos/test-repo",
+let majordomoErrorDemoEndpoint: Endpoint = {
+    url: "majordomo-error-demo",
+    name: "dti-majordomo-error-demo",
+    onCallCode: 
+    `// Get the IP of whoever posted to the endpoint
+    const ip = getIpAddr();
+
+    // Create an issue, we ran into a divide by zero!
+    // Create a callback to post about it on slack with the issue url! We wou;dn't want to miss it!
+    createGithubIssue(\"A user (\" + ip + \") has caused a backend error \", \"The user pressed a button which causes a backend error, unsuprisingly causing a backend error. This error is now reported here for all posterity. In a real product, you can make this include actual proper error readout information. We didn't for conveinience. Happy bug fixing!\", function(issueUrl) {
+        slackPost(\"<!channel> Heads up! A user (\" + ip + \") ran into an issue: \" + issueUrl)
+    });
+    `,
+    linkedGithubRepo: "https://github.com/khemritolya/dti-majordomo",
     linkedSlackChannel: majordomoTestingChannel,
+}
+
+// Split  a url like https://github.com/khemritolya/dti-majordomo into khemritolya, dti-majordomo
+const splitRepoUrl = function(url: string): [string, string] {
+    const urlFragments = url.replace("//", "/").split("/");
+    return [urlFragments[2], urlFragments[3]];
 }
 
 // All the endpoints we have on the server
 // Why yes, I *am* too lazy to use a DB!
 // using Sets allows us to not add duplicates
-let endpoints = new Set([ majordomoSuggestionEndpoint ]);
+let endpoints = new Set([ majordomoSuggestionEndpoint, majordomoErrorDemoEndpoint ]);
 
 // Check if we have a slack token
 if (!process.env.SLACK_TOKEN) {
@@ -52,9 +74,8 @@ if (!process.env.SLACK_TOKEN) {
 // Used to push messages
 const slack = new WebClient(process.env.SLACK_TOKEN);
 
-// Very basic
 // Function which sends a slack message eventually.
-const sendSlackMessage = async function(channel: string, text: string) {
+const sendSlackMessage = async function(channel: string, text: string, callback?: () => void ) {
     try {
         await slack.chat.postMessage({
             channel: channel,
@@ -62,13 +83,53 @@ const sendSlackMessage = async function(channel: string, text: string) {
         });
 
         console.log(`Sent slack message in ${channel}: ${text}`);
+        
+        if(callback) {
+            callback();
+        }
     } catch (err) {
         console.log(`An error has occured while trying to slack post:\n${err}`);
     }
 };
 
+// Function which creates a github issue
+// returns the url of the newly created issue
+const createGitubIssue = async function(repoOwner: string, repoName: string, title: string, text: string, callback?: (string) => void) {
+    try {
+        const issue = await octokit.request('POST /repos/{owner}/{repo}/issues', {
+            owner: repoOwner,
+            repo: repoName,
+            title: title,
+            body: text
+        });
+
+        const normedUrl = issue.data.url.replace("api.github.com/repos", "github.com");
+
+        console.log(`Created an issue ${normedUrl}`);
+
+        if (callback) {
+            callback(normedUrl);
+        }
+
+        return issue.url;
+    } catch (err) {
+        console.log("An error has occured trying to create a github issue!");
+    }
+
+}
+
+// Check if we have a github login
+if (!process.env.GITHUB_TOKEN) {
+    console.log("Unable to find github token!");
+} else {
+    console.log("Integrating with github!")
+}
+
+// Create it here so we can access it later!
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
 // What port is this program running on?
-const port = 1776
+const port = 17760
 
 // Hide our endpoint creation endpoints behind this gargabe. We wouldn't want anyone to be able to create endpoints
 // Note that we DON'T add this to user created endpoints
@@ -86,6 +147,7 @@ const randomEndpointAddressModifier = crypto.randomBytes(30).toString("hex");
 const httpServer = express();
 httpServer.use(bodyParser.urlencoded({ extended: false }));
 httpServer.use(bodyParser.json());
+httpServer.set('trust proxy', true)
 
 // Set up the ability to list for each endpoint
 // Question: does this cause a duplication problem? Are dynamic endpoints a thing?
@@ -95,14 +157,20 @@ const setupEndpoints = () => {
         httpServer.post(`/custom-endpoints/${endpoint.url}`, async (req, res) => {
             console.log(`Called custon endpoint ${endpoint.name}`);
 
+            const [ repoOwner, repoName ] = splitRepoUrl(endpoint.linkedGithubRepo);
+
             // Create VM to run endpoint action code
             const sandbox = new Vm();
 
             // Define the integration functions that the user can call!
-            sandbox.realm.global.getResponseJson = function() { return req.body; };
-            sandbox.realm.global.slackPost = function(text: string) {
-                return (async () => { await sendSlackMessage(endpoint.linkedSlackChannel, text) })();
+            sandbox.realm.global.getPostJson = function() { return req.body; };
+            sandbox.realm.global.getIpAddr = function() { return req.ip; };
+            sandbox.realm.global.slackPost = function(text: string, callback?: () => void) {
+                return (async () => { await sendSlackMessage(endpoint.linkedSlackChannel, text, callback) })();
             };
+            sandbox.realm.global.createGithubIssue = function(title: string, text: string, callback?: (string) => void) {
+                (async () => await createGitubIssue(repoOwner, repoName, title, text, callback))();
+            }
 
             sandbox.eval(endpoint.onCallCode);
 
