@@ -1,5 +1,7 @@
 # DTI Majordomo
 
+<img src="docs/images/logo.png">
+
 Easily integrate your project with slack and github! It's as simple as creating an endpoint.
 
 ### How to use:
