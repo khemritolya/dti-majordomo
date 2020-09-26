@@ -26,7 +26,7 @@ slackPost("A user (" + ip + ") has a suggestion: " + data.text);`
 You can then call this endpoint on your backend/frontend/using curl, e.g:
 
 ```bash
-curl -X POST -d 'text=You should implement feature foo' http://[address]:17760/custom-endpoints/majordomo-error-demo
+curl -X POST -d 'text=You should implement feature foo' http://[address]:17760/custom-endpoints/majordomo-suggestion
 ```
 
 In this case, you'll see the message show up in #majordomo-testing-channel ! Receiving user feedback has never been easier!
