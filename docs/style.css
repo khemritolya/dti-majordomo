@@ -617,4 +617,58 @@ textarea{
     opacity: 75%;
 }
 
- 
+.feedback-group{
+    margin-left: 62px;
+    margin-top: 70px;
+}
+
+.feedback-url{
+    width: 189.96px;
+    height: 24px;
+    left: 212px;
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 24px;
+    color: #3A3A3A;
+}
+
+.feedback-control[type=text]{
+        height: 50px;
+        font-family: Poppins;
+        color: black;
+        margin-top: 8px;
+        width: 70%;
+        padding: 10px 10px;
+        border-color: clear;
+        box-sizing: border-box;
+        border-width: thin;
+        border-radius: 10px;
+}
+
+.skip_btn{
+    position: absolute;
+    display: flex;
+    padding: 10px 10px;
+
+    position: absolute;
+    width: 10px;
+    height: 40px;
+    right: 200px;
+    bottom: 20px;
+
+    background: none;
+    border: none;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 24px;
+    color: #3F7EDE;
+
+    font-family: Poppins;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 24px;    
+}
