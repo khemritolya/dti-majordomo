@@ -142,3 +142,5 @@ httpServer.post(`/${randomEndpointAddressModifier}/create-endpoint`, async (req,
 httpServer.listen(port, async () => {
     console.log(`Starting Webserver on port ${port}`);
 });
+
+console.log(`!!! For local development purposes, you can use this url to contact this server (i.e. to test endpoints): http://localhost:${port}/${randomEndpointAddressModifier}/`)
