@@ -1,10 +1,27 @@
 # DTI Majordomo
 
+<img src="docs/images/logo.png">
+
 Easily integrate your project with slack and github! It's as simple as creating an endpoint.
 
 ### How to use:
 
-You can access the frontend [here](https://khemritolya.github.io/dti-majordomo/). Simply follow the instructions, and set up your endpoint in no time. Note: It will prompt you for a "backend url". This is to prevent just anyone from creating and editing endpoints. You can find the most recent backend url on slack in the #majordomo-testing-channel. 
+You can access the majordomo website [here](https://khemritolya.github.io/dti-majordomo/)!
+
+<img src="Screenshots/onboarding_design.png" width=400)>
+
+Simply follow the instructions, and set up your endpoint in no time. Note: It will prompt you for a "backend url". This is to prevent just anyone from creating and editing endpoints. 
+
+<img src="Screenshots/create endpoint_design.png" width=400)>
+
+Input your customizable code. Link your endpoint to a Github repo or a Slack channel. Later you can find the most recent backend url on slack in the #majordomo-testing-channel. 
+
+<img src="Screenshots/form_design.png" width=400)>
+
+Feel free to leave your feedback for us, and YOU ARE ALL SET!
+
+<img src="Screenshots/confirmation_design.png" width=400)>
+
 
 ### Example workflows:
 
@@ -56,3 +73,4 @@ Calling this function creates a github issue in the repository defined (see the 
 ##### `slackPost(text, callback?)`
 
 Calling this function posts text to the slack channel that defined (again, see endpoint creation form). On a success, it will then attempt to call the callback, if one is specified. It provides no arguments to the callback.
+
