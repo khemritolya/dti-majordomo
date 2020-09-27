@@ -5,6 +5,7 @@ import Vm from "vm.js";
 import crypto from "crypto";
 import ipify from "ipify";
 import { Octokit } from "@octokit/core";
+import rateLimit, { RateLimit } from "express-rate-limit";
 
 // A particular endpoint, and all the information associated with it.
 interface Endpoint {
@@ -212,3 +213,10 @@ httpServer.listen(port, async () => {
 });
 
 console.log(`!!! For local development purposes, you can use this url to contact this server (i.e. to test endpoints): http://localhost:${port}/${randomEndpointAddressModifier}/`)
+
+const limiter = rateLimit({
+    max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000 // 15 minutes
+});
+ 
+httpServer.use(limiter);
