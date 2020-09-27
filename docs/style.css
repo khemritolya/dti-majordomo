@@ -38,8 +38,9 @@ body{
     
 }
 
+/*start page*/
 .column-dti{
-    margin-left: 137px;
+    margin-left: 120px;
 }
 
 .column-dti p{
@@ -47,7 +48,7 @@ body{
   float: left;
   width: 33.33%;
   margin-top: 125px;
-  padding-right: 140px;
+  padding-right: 75px;
 }
 
 .p{
@@ -104,6 +105,8 @@ body{
 .btn:hover{
     opacity: 75%;
 }
+
+/*use-create endpoint page*/
 
 .input-group{
     margin-left: 62px;
@@ -621,6 +624,7 @@ textarea{
     opacity: 75%;
 }
 
+/*feedback page*/
 .feedback-group{
     margin-left: 62px;
     margin-top: 70px;
