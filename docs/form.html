@@ -7,6 +7,89 @@
     <title>Majordomo</title>
     <link rel="stylesheet" href="style.css">
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <script>
+        const httpGetRequest = function(url, handle) {
+            const oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", handle);
+            oReq.open("GET", url);
+            oReq.send();
+        }
+
+        let validAddr;
+
+        window.addEventListener("load", function() {
+            const addr = window.location.toString();
+
+            if (!addr.includes("#")) {
+                alert("I'm not sure how you got here...");
+            } else {
+                const begin = addr.indexOf("#") + 1;
+                if (addr.includes(",")) {
+                    const serverAddr = addr.substr(begin, addr.indexOf(",") - begin);
+                    const lookForName = addr.substr(addr.indexOf(",") + 1);
+
+                    httpGetRequest(serverAddr + "get-endpoints", function() {
+                        if (this.status !== 200) {
+                            alert("Something went wrong");
+                        } else {
+                            const endpoints = JSON.parse(this.responseText);
+
+                            const endpoint = endpoints.filter(e => e.name === lookForName);
+                            console.log(lookForName);
+
+                            if (endpoint.length !== 1) {
+                                alert("Something went wrong...");
+                            } else {
+                                const e = endpoint[0];
+                                document.getElementById("github-url").value = e.linkedGithubRepo;
+                                document.getElementById("slack-channel").value = e.linkedSlackChannel;
+                                document.getElementById("t1").value = e.description;
+                                document.getElementById("c1").value = e.onCallCode;
+                                document.getElementById("url1").value = e.name;
+                            }
+                        }
+                    });
+
+                    validAddr = serverAddr;
+                } else {
+                    const serverAddr = addr.substr(begin);
+                    validAddr = serverAddr;
+                }
+            }
+        });
+
+        const isolateUrl = function() {
+            const initial = window.location.toString().substring(0, window.location.toString().indexOf("#"));
+            return initial.substring(0, initial.lastIndexOf("/") + 1);
+        }
+
+        const update = function() {
+            let toPost = {
+                url: document.getElementById("url1").value,
+                name: document.getElementById("url1").value,
+                description: document.getElementById("t1").value,
+                onCallCode: document.getElementById("c1").value,
+                linkedGithubRepo: document.getElementById("github-url").value,
+                linkedSlackChannel: document.getElementById("slack-channel").value
+            }
+
+            console.log(toPost);
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", validAddr + "create-endpoint", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            xhr.send("data=" + JSON.stringify(toPost));
+            xhr.onreadystatechange = function(ev) {
+                if (this.readyState != 4) return;
+                
+                if (this.status !== 200) {
+                    alert("Something went wrong...");
+                } else {
+                    window.location.href = isolateUrl() + "feedback.html#" + validAddr;
+                }
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -18,7 +101,7 @@
     <div class="wrapper">
         <div class="name-group">
             <label class="name-url" for="basic-url">Name </label><br>
-            <input type="text" class="name-control" id="basic-url">
+            <input type="text" class="name-control" id="url1">
         </div>
         <div class="rate-group">
             <label class="rate-url">Rate Limit </label><br>
@@ -31,24 +114,24 @@
         </div>
         <div class="desc-group">
             <label class="desc-url" for="basic-url">Endpoint Description </label><br>
-            <textarea name="desc-control" rows="5" cols="120"></textarea>
+            <textarea name="desc-control" rows="5" cols="120" id="t1"></textarea>
         </div>
         <div class="github-group">
-            <label class="github-url">Github URL </label><br>
-            <input type="text" class="github-control" id="basic-url">
+            <label class="github-url">Github URL</label><br>
+            <input type="text" class="github-control" id="github-url">
         </div>
         <div class="slack-group">
             <label class="slack-url">Slack Channel </label><br>
-            <input type="text" class="slack-control" id="basic-url">
+            <input type="text" class="slack-control" id="slack-channel">
         </div>
         <div class="code-group">
             <label class="code-url" for="basic-url">Code </label><br>
-            <textarea name="code-control" rows="8" cols="120"></textarea>
+            <textarea name="code-control" rows="8" cols="120" id="c1"></textarea>
         </div>
         <a href="endpoint.html" target=_parent><button type="button" class="back_btn btn-primary" data-toggle="button"
                 aria-pressed="false" autocomplete="off">Back</button></a>
-        <a href="feedback.html" target=_parent><button type="button" class="submit_btn btn-primary" data-toggle="button"
-                aria-pressed="false" autocomplete="off">Submit</button></a>
+        <button type="button" class="submit_btn btn-primary" data-toggle="button"
+                aria-pressed="false" autocomplete="off" onclick="update()">Submit</button>
     </div>
     <script src="main.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"

@@ -7,6 +7,55 @@
   <title>Majordomo</title>
   <link rel="stylesheet" href="style.css">
   <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+  <script>
+    const isolateUrl = function() {
+        const initial = window.location.toString().substring(0, window.location.toString().indexOf("#"));
+        return initial.substring(0, initial.lastIndexOf("/") + 1);
+    }
+
+    const httpGetRequest = function(url, handle) {
+      const oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", handle);
+      oReq.open("GET", url);
+      oReq.send();
+    }
+
+    const sendFeedback = function() {
+      const text = document.getElementById("t1").value;
+      const addrBase = window.location.href.substr(window.location.href.indexOf("#") + 1);
+      console.log(addrBase);
+      const addr = addrBase.substr(0, addrBase.indexOf("/", 8));
+
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", addr + "/custom-endpoints/majordomo-suggestion", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+      xhr.send("text=" + text);
+      xhr.onreadystatechange = function(ev) {
+          if (this.readyState != 4) return;
+
+          console.log(this);
+          
+          if (this.status !== 200) {
+              alert("Something went wrong...");
+          } else {
+              window.location.href = isolateUrl() + "confirm.html";
+          }
+      }      
+    }
+
+    const failure = function() {
+      const addrBase = window.location.href.substr(window.location.href.indexOf("#") + 1);
+      console.log(addrBase);
+      const addr = addrBase.substr(0, addrBase.indexOf("/", 8));
+
+      alert("Oh no, you just caused a backend error! You had better check out github now!")
+
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", addr + "/custom-endpoints/majordomo-error-demo", true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+      xhr.send("nada");
+    }
+  </script>
 </head>
 
 <body>
@@ -18,12 +67,12 @@
   <div class="wrapper">
     <div class="feedback-group">
       <label class="feedback-url">Do you have any suggestions for our product? </label><br>
-      <textarea name="feedback-control" rows="25" cols="120"></textarea>
+      <textarea name="feedback-control" rows="25" cols="120" id="t1"></textarea>
     </div>
-    <a href="confirm.html" target=_parent><button type="button" class="skip_btn btn-primary" data-toggle="button"
-        aria-pressed="false" autocomplete="off">Skip</button></a>
-    <a href="confirm.html" target=_parent><button type="button" class="submit_btn btn-primary" data-toggle="button"
-        aria-pressed="false" autocomplete="off">Submit</button></a>
+    <button type="button" class="skip_btn btn-primary" data-toggle="button"
+        aria-pressed="false" autocomplete="off" onclick="failure()">Skip</button>
+    <button type="button" class="submit_btn btn-primary" data-toggle="button"
+        aria-pressed="false" autocomplete="off" onclick="sendFeedback()">Submit</button>
   </div>
   <script src="main.js"></script>
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"

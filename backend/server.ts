@@ -10,6 +10,7 @@ import { Octokit } from "@octokit/core";
 interface Endpoint {
     url: string,
     name: string,
+    description: string,
     onCallCode: string,
     linkedGithubRepo: string,
     linkedSlackChannel: string
@@ -21,32 +22,34 @@ const majordomoTestingChannel: string = "#majordomo-testing-channel"
 // An example suggestions endpoint
 let majordomoSuggestionEndpoint: Endpoint = {
     url: "majordomo-suggestion",
-    name: "dti-majordomo-suggestion",
+    name: "majordomo-suggestion", // we messed up, these have to be the same now :(
+    description: "Allows users to post suggestions about DTI Majordomo to slack!",
     onCallCode:
     `// Get any JSON Data associated with the HTTP POST request
-    const data = getPostJson();
+const data = getPostJson();
 
-    // Get the IP of whoever posted to the endpoint
-    const ip = getIpAddr();
+// Get the IP of whoever posted to the endpoint
+const ip = getIpAddr();
 
-    // Post the 'text' field of the json to slack!
-    slackPost(\"A user (\" + ip + \") has a suggestion: \" + data.text);`,
+// Post the 'text' field of the json to slack!
+slackPost(\"A user (\" + ip + \") has a suggestion: \" + data.text);`,
     linkedGithubRepo: "https://github.com/khemritolya/dti-majordomo",
     linkedSlackChannel: majordomoTestingChannel,
 }
 
 let majordomoErrorDemoEndpoint: Endpoint = {
     url: "majordomo-error-demo",
-    name: "dti-majordomo-error-demo",
+    name: "majordomo-error-demo",
+    description: "Allows users to post suggestions about DTI Majordomo to slack!",
     onCallCode: 
     `// Get the IP of whoever posted to the endpoint
-    const ip = getIpAddr();
+const ip = getIpAddr();
 
-    // Create an issue, we ran into a divide by zero!
-    // Create a callback to post about it on slack with the issue url! We wou;dn't want to miss it!
-    createGithubIssue(\"A user (\" + ip + \") has caused a backend error \", \"The user pressed a button which causes a backend error, unsuprisingly causing a backend error. This error is now reported here for all posterity. In a real product, you can make this include actual proper error readout information. We didn't for conveinience. Happy bug fixing!\", function(issueUrl) {
-        slackPost(\"<!channel> Heads up! A user (\" + ip + \") ran into an issue: \" + issueUrl)
-    });
+// Create an issue, we ran into a divide by zero!
+// Create a callback to post about it on slack with the issue url! We wou;dn't want to miss it!
+createGithubIssue(\"A user (\" + ip + \") has caused a backend error \", \"The user pressed a button which causes a backend error, unsuprisingly causing a backend error. This error is now reported here for all posterity. In a real product, you can make this include actual proper error readout information. We didn't for conveinience. Happy bug fixing!\", function(issueUrl) {
+    slackPost(\"<!channel> Heads up! A user (\" + ip + \") ran into an issue: \" + issueUrl)
+});
     `,
     linkedGithubRepo: "https://github.com/khemritolya/dti-majordomo",
     linkedSlackChannel: majordomoTestingChannel,
@@ -61,7 +64,8 @@ const splitRepoUrl = function(url: string): [string, string] {
 // All the endpoints we have on the server
 // Why yes, I *am* too lazy to use a DB!
 // using Sets allows us to not add duplicates
-let endpoints = new Set([ majordomoSuggestionEndpoint, majordomoErrorDemoEndpoint ]);
+// That is actually incorrect. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+let endpoints: Endpoint[] = [ majordomoSuggestionEndpoint, majordomoErrorDemoEndpoint ];
 
 // Check if we have a slack token
 if (!process.env.SLACK_TOKEN) {
@@ -149,10 +153,15 @@ httpServer.use(bodyParser.urlencoded({ extended: false }));
 httpServer.use(bodyParser.json());
 httpServer.set('trust proxy', true)
 
+httpServer.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+});
 // Set up the ability to list for each endpoint
 // Question: does this cause a duplication problem? Are dynamic endpoints a thing?
 const setupEndpoints = () => {
-    console.log(`setting up ${endpoints.size} endpoints`);
+    console.log(`setting up ${endpoints.length} endpoints`);
     endpoints.forEach(endpoint => {
         httpServer.post(`/custom-endpoints/${endpoint.url}`, async (req, res) => {
             console.log(`Called custon endpoint ${endpoint.name}`);
@@ -183,9 +192,13 @@ const setupEndpoints = () => {
 
 setupEndpoints();
 
-httpServer.get(`/${randomEndpointAddressModifier}`, (req, res) => {
+httpServer.get(`/${randomEndpointAddressModifier}`, async (req, res) => {
     console.log("Someone tried to navigate to this page!");
     res.send("Sorry mate, that's now how you access this service. Check the github/slack! Cheers");
+});
+
+httpServer.get(`/${randomEndpointAddressModifier}/ping`, async (req, res) => {
+    res.send("pong");
 });
 
 // What to do if someone asks for all the endpoints that are available
@@ -195,12 +208,17 @@ httpServer.get(`/${randomEndpointAddressModifier}/get-endpoints`, async (req, re
 
 // What to do to create a new endpoint
 httpServer.post(`/${randomEndpointAddressModifier}/create-endpoint`, async (req, res) => {
-    let body = (req.body) as Endpoint;
+    let body = JSON.parse(req.body.data) as Endpoint;
 
     console.log(`Request to create endpoint ${body.name}`);
 
     // NOTE: don't blindly add endpoints, check if they exist in the set
-    endpoints.add(body);
+    const prev = endpoints.filter(e => e.name === body.name);
+    if (prev.length === 1) {
+        endpoints[endpoints.indexOf(prev[0])] = body;
+    } else {
+        endpoints.push(body);
+    }
 
     setupEndpoints();
 

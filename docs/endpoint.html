@@ -8,6 +8,62 @@
     <link rel="stylesheet" href="style.css">
     <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
+    <script>
+        const httpGetRequest = function(url, handle) {
+            const oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", handle);
+            oReq.open("GET", url);
+            oReq.send();
+        }
+
+        let validAddr;
+
+        const checkUrl = function() {
+            const url = document.getElementById("inpt").value;
+            const normedUrl = url + (url.slice(-1) === "/" ? "" : "/");
+
+            httpGetRequest(normedUrl + "ping", function() {
+                if(this.responseText !== "pong") {
+                    alert("Invalid url!");
+                } else {
+                    validAddr = normedUrl;
+                    httpGetRequest(normedUrl + "get-endpoints", function() {
+                        if (this.status !== 200) {
+                            alert("Something went wrong");
+                        } else {
+                            const endpoints = JSON.parse(this.responseText);
+
+                            let datalist = document.getElementById("json-datalist");
+                            datalist.disabled = false;
+                            datalist.innerHTML = endpoints.map(e => "<option value=\"" + e.name + "\"></option>").reduce((a, b) => a + b);
+
+                            let b1 = document.getElementById("b1");
+                            b1.disabled = false;
+                            b1.style.backgroundColor = "#3F7EDE";
+
+                            let b2 = document.getElementById("b2");
+                            b2.disabled = false;
+                            b2.style.backgroundColor = "#3F7EDE";
+                        }
+                    })
+                }
+            });
+        }
+
+        const isolateUrl = function() {
+            return window.location.toString().substring(0, window.location.toString().lastIndexOf("/"));
+        }
+
+        const createEndpoint = function() {
+            window.location.href = isolateUrl() + "/form.html#" + validAddr;
+        }
+
+        const viewEndpoint = function() {
+            const datalist = document.getElementById("f1");
+            window.location.href = isolateUrl() + "/form.html#" + validAddr + "," + datalist.value;
+        }
+    </script>
 </head>
 
 <body>
@@ -19,30 +75,22 @@
     <div class="wrapper">
         <div class="input-group">
             <label class="label-url" for="basic-url">Backend URL </label><br>
-            <input type="text" class="form-control" id="basic-url"
+            <input type="text" class="form-control" id="inpt" oninput="checkUrl()"
                 placeholder="Get the latest backend url from #majordomo-testing-channel" />
         </div>
         <div class="container">
             <div class="search-input-group">
                 <label class="history-url" for="ajax">Choose an Endpoint </label><br>
-                <input type="text" class="search-control" list="json-datalist" />
-                <datalist id="json-datalist">
-                    <option value="CUReviews_Endpoint1"></option>
-                    <option value="CoursePlan_Endpoint1"></option>
-                    <option value="CoursePlan_Endpoint2"></option>
-                    <option value="Flux_Endpoint1"></option>
-                    <option value="QueueMeIn_Endpoint1"></option>
-                    <option value="QueueMeIn_Endpoint2"></option>
-                    <option value="QueueMeIn_Endpoint3"></option>
-                    <option value="Carriage_Endpoint1"></option>
+                <input type="text" class="search-control" list="json-datalist" id="f1"/>
+                <datalist id="json-datalist" disabled>
                 </datalist>
             </div>
             <label class="or-label">or</label>
-            <a href="form.html" target=_parent><button type="button" class="next_btn btn-primary" data-toggle="button"
-                    aria-pressed="false" autocomplete="off">Next</button></a>
+            <button type="button" class="next_btn btn-primary" data-toggle="button" id="b1"
+                    aria-pressed="false" autocomplete="off" disabled style="background-color: grey;" onclick="viewEndpoint()">Next</button>
         </div>
-        <a href="form.html" target=_parent><button type="button" class="create_btn btn-primary" data-toggle="button"
-                aria-pressed="false" autocomplete="off">Create an endpoint</button></a>
+        <button type="button" class="create_btn btn-primary" data-toggle="button" id="b2"
+                aria-pressed="false" autocomplete="off" disabled style="background-color: grey;" onclick="createEndpoint()">Create an endpoint</button>
     </div>
     <script type="text/javascript" src="script.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
