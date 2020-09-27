@@ -6,7 +6,7 @@ Easily integrate your project with slack and github! It's as simple as creating 
 
 ### How to use:
 
-You can access the frontend [here](https://khemritolya.github.io/dti-majordomo/). 
+You can access the majordomo website [here](https://khemritolya.github.io/dti-majordomo/)!
 
 <img src="Screenshots/onboarding_design.png" width=400)>
 
